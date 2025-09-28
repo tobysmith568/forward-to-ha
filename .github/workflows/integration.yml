@@ -1,0 +1,128 @@
+name: Continuous Integration
+run-name: Continuous Integration for ${{ (inputs.version && format('v{0}', inputs.version)) || (github.event.pull_request.number && format('PR {0}', github.event.pull_request.number)) || github.ref_name }}
+
+on:
+  push:
+    branches:
+      - main
+      - renovate/*
+  pull_request:
+    branches:
+      - main
+      - "!renovate/*"
+  workflow_call:
+    inputs:
+      version:
+        description: Version to build
+        required: true
+        type: string
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to build
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: pwsh
+
+jobs:
+  lint:
+    name: Lint
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: tobysmith568/actions/.github/actions/checkout-pnpm-project@main
+
+      - name: Run ESLint
+        run: pnpm exec eslint . --max-warnings 0
+
+      - name: Run Prettier
+        run: pnpm exec prettier --check .
+
+  typecheck:
+    name: Type Check
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: tobysmith568/actions/.github/actions/checkout-pnpm-project@main
+
+      - name: Run TypeScript
+        run: pnpm run typecheck
+
+  build:
+    name: Build
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: tobysmith568/actions/.github/actions/checkout-pnpm-project@main
+
+      - name: Set Version
+        if: ${{ inputs.version }}
+        run: npm version ${{ inputs.version }} --git-tag-version false
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image artifact
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: forward-to-ha:${{ github.sha }}
+          outputs: type=docker,dest=/tmp/forward-to-ha-${{ github.sha }}.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Upload image artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image-${{ github.sha }}
+          path: /tmp/forward-to-ha-${{ github.sha }}.tar
+          if-no-files-found: error
+          retention-days: 7
+
+  # test:
+  #   name: Unit Test
+
+  #   runs-on: ubuntu-latest
+
+  #   steps:
+  #     - name: Checkout
+  #       uses: tobysmith568/actions/.github/actions/checkout-pnpm-project@main
+
+  #     - name: Unit Test
+  #       run: pnpm exec vitest run
+
+  licenses:
+    name: Check Licenses
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: tobysmith568/actions/.github/actions/checkout-pnpm-project@main
+
+      - name: Check Licenses
+        run: pnpm exec license-cop
+
+  codeql:
+    name: CodeQL
+
+    uses: ./.github/workflows/codeql.yml
+
+    secrets: inherit
+
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read

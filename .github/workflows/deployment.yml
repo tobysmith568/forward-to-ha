@@ -1,0 +1,89 @@
+name: Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to deploy
+        required: true
+        type: string
+
+defaults:
+  run:
+    shell: pwsh
+
+concurrency:
+  group: Continuous Deployment
+  cancel-in-progress: false
+
+jobs:
+  calculate:
+    name: Calculate Variables
+    runs-on: ubuntu-latest
+    outputs:
+      image: ${{ steps.vars.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: tobysmith568/actions/.github/actions/checkout-pnpm-project@main
+
+      - name: Set Version
+        run: npm version ${{ inputs.version }} --git-tag-version false
+
+      - name: Compute image coordinates
+        id: vars
+        run: |
+          $owner = "${{ github.repository_owner }}".ToLower()
+          $repo  = "${{ github.repository }}".Split("/")[1].ToLower()
+          $image = "ghcr.io/$owner/$repo"
+          "image=$image" >> $env:GITHUB_OUTPUT
+
+  integration:
+    name: Run Continuous Integration
+    needs:
+      - calculate
+    permissions:
+      security-events: write
+      packages: read
+      actions: read
+      contents: read
+    uses: ./.github/workflows/integration.yml
+    secrets: inherit
+    with:
+      version: ${{ github.event.inputs.version }}
+
+  push:
+    name: Push Image
+    runs-on: ubuntu-latest
+    needs:
+      - calculate
+      - integration
+    permissions:
+      packages: write
+      contents: read
+    steps:
+      - name: Download Image Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image-${{ github.sha }}
+          path: ./image
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load image and push tags
+        env:
+          IMAGE: ${{ needs.calculate.outputs.image }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          docker load -i ./image/forward-to-ha-${{ github.sha }}.tar
+          $sourceTag = "forward-to-ha:${{ github.sha }}"
+          $versionTag = "$env:IMAGE:v$env:VERSION"
+          $latestTag  = "$env:IMAGE:latest"
+          docker tag $sourceTag $versionTag
+          docker tag $sourceTag $latestTag
+          docker push $versionTag
+          docker push $latestTag

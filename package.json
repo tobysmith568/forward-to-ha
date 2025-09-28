@@ -1,0 +1,36 @@
+{
+  "name": "forward-to-ha",
+  "private": true,
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.15.0+sha512.486ebc259d3e999a4e8691ce03b5cac4a71cbeca39372a9b762cb500cfdf0873e2cb16abe3d951b1ee2cf012503f027b98b6584e4df22524e0c7450d9ec7aa7b",
+  "type": "module",
+  "license": "UNLICENSED",
+  "prettier": "@tobysmith568/prettier-config",
+  "scripts": {
+    "lint": "eslint . --max-warnings=0",
+    "start": "node dist/index.mjs",
+    "serve": "tsx src/index.ts",
+    "build": "tsx esbuild.config.mts",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "ask-sdk-core": "^2.14.0",
+    "ask-sdk-express-adapter": "^2.4.0",
+    "ask-sdk-model": "^1.86.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2",
+    "zod": "^4.1.11"
+  },
+  "devDependencies": {
+    "@license-cop/permissive": "^1.8.1",
+    "@tobysmith568/eslint-config": "^2.5.0",
+    "@tobysmith568/prettier-config": "^2.2.1",
+    "@types/express": "^4.17.21",
+    "@types/node": "^24.4.0",
+    "esbuild": "^0.25.9",
+    "license-cop": "^1.8.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
