@@ -81,8 +81,9 @@ jobs:
         run: |
           docker load -i ./image/forward-to-ha-${{ github.sha }}.tar
           $sourceTag = "forward-to-ha:${{ github.sha }}"
-          $versionTag = "$env:IMAGE:v$env:VERSION"
-          $latestTag  = "$env:IMAGE:latest"
+          $versionTag = "$(($env:IMAGE)):v$(($env:VERSION))"
+          $latestTag  = "$(($env:IMAGE)):latest"
+          Write-Host "Tagging $sourceTag -> $versionTag and $latestTag"
           docker tag $sourceTag $versionTag
           docker tag $sourceTag $latestTag
           docker push $versionTag
