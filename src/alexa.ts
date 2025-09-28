@@ -63,9 +63,7 @@ const launchRequestHandler: RequestHandler = {
   },
   handle(handlerInput: HandlerInput): Response {
     return handlerInput.responseBuilder
-      .speak(
-        "Welcome, you can say trigger followed by a command based on what your Home Assistant is set up to respond to."
-      )
+      .speak("Welcome.")
       .reprompt("Try saying phrases like 'trigger TV Mode'.")
       .getResponse();
   }
