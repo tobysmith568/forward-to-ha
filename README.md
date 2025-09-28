@@ -34,12 +34,12 @@ This app will POST JSON like this:
 { "trigger": "TV mode", "deviceId": "alexa-device-id" }
 ```
 
-Set HA_URL to your webhook URL:
+Set `HA_URL` to your webhook URL:
 
 - Nabu Casa Cloudhook: the provided cloudhook URL
-- Public HA: https://your.domain/api/webhook/<webhook_id>
+- Public HA: `https://your.domain/api/webhook/<webhook_id>`
 
-Note: /api/webhook does not require a token. If you set HA_TOKEN, it’s ignored by webhook endpoints.
+Note: `/api/webhook` does not require a token. If you set HA_TOKEN, it’s ignored by webhook endpoints.
 
 ---
 
@@ -49,9 +49,9 @@ Deploy this docker container anywhere that can run a container (Cloud Run, ECS, 
 
 Environment variables:
 
-- HA_URL (required): your HA webhook URL
-- HA_TOKEN (optional): not used for /api/webhook
-- PORT (optional): default 3000
+- `HA_URL` (required): your HA webhook URL
+- `HA_TOKEN` (optional): not used for /api/webhook
+- `PORT` (optional): default 3000
 
 Run locally:
 
@@ -67,42 +67,45 @@ docker run --rm -p 3000:3000 -e HA_URL=https://your.domain/api/webhook/<id> forw
 - Create a `Custom` skill in the Alexa Developer Console
 - Under the Interaction model:
   - Under Intents, use the JSON Editor and paste this:
-
-```json
-{
-  "interactionModel": {
-    "languageModel": {
-      "invocationName": "home assistant",
-      "intents": [
-        {
-          "name": "Trigger_HA",
-          "slots": [
-            {
-              "name": "trigger",
-              "type": "AMAZON.SearchQuery"
-            }
-          ],
-          "samples": ["set {trigger}", "trigger {trigger}", "start {trigger}"]
-        },
-        {
-          "name": "AMAZON.StopIntent",
-          "samples": []
+    <details>
+      <summary>Click to expand</summary>
+      
+      ```json
+      {
+        "interactionModel": {
+          "languageModel": {
+            "invocationName": "home assistant",
+            "intents": [
+              {
+                "name": "Trigger_HA",
+                "slots": [
+                  {
+                    "name": "trigger",
+                    "type": "AMAZON.SearchQuery"
+                  }
+                ],
+                "samples": ["set {trigger}", "trigger {trigger}", "start {trigger}"]
+              },
+              {
+                "name": "AMAZON.StopIntent",
+                "samples": []
+              }
+            ],
+            "types": []
+          }
         }
-      ],
-      "types": []
-    }
-  }
-}
-```
+      }
+      ```
+      
+    </details>
 
 - Under Endpoint:
   - HTTPS, Default Region -> https://wherever-you-hosted-this-docker-image/alexa
   - Use your public URL (Cloud Run/ingress/load balancer)
 - Build the model and test
 
-:::tip
-For local testing only, use a tunnel (ngrok/cloudflared) to expose http://localhost:3000/alexa to the public internet over HTTPS.
-:::
+> [!TIP]
+> For local testing only, use a tunnel (ngrok/cloudflared) to expose http://localhost:3000/alexa to the public internet over HTTPS.
 
 ---
 
@@ -110,4 +113,4 @@ For local testing only, use a tunnel (ngrok/cloudflared) to expose http://localh
 
 - `GET /` -> Welcome message
 - `GET /version` -> The deployed version of the container
-- `POST /alexa` -> Where Alexa should send requests, which are then forwarded to HA_URL
+- `POST /alexa` -> Where Alexa should send requests, which are then forwarded to `HA_URL`
