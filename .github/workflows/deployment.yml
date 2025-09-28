@@ -97,7 +97,7 @@ jobs:
           IMAGE: ${{ needs.calculate.outputs.image }}
           VERSION: ${{ inputs.version }}
         run: |
-          $ref = "$env:IMAGE:v$env:VERSION"
+          $ref = "$(($env:IMAGE)):v$(($env:VERSION))"
           $digestRef = (docker inspect --format='{{index .RepoDigests 0}}' $ref)
           if (-not $digestRef) { throw "Could not resolve digest for $ref" }
           $digest = $digestRef -replace '.*@',''
