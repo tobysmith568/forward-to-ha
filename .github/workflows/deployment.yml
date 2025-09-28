@@ -60,6 +60,7 @@ jobs:
     permissions:
       packages: write
       contents: read
+      id-token: write
     steps:
       - name: Download Image Artifact
         uses: actions/download-artifact@v4
@@ -88,3 +89,23 @@ jobs:
           docker tag $sourceTag $latestTag
           docker push $versionTag
           docker push $latestTag
+
+      - name: Resolve digest
+        id: resolve
+        env:
+          IMAGE: ${{ needs.calculate.outputs.image }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          $ref = "$env:IMAGE:v$env:VERSION"
+          $digestRef = (docker inspect --format='{{index .RepoDigests 0}}' $ref)
+          if (-not $digestRef) { throw "Could not resolve digest for $ref" }
+          $digest = $digestRef -replace '.*@',''
+          "digest=$digest" >> $env:GITHUB_OUTPUT
+          Write-Host "Resolved $ref@$digest"
+
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-name: ${{ needs.calculate.outputs.image }}
+          subject-digest: ${{ steps.resolve.outputs.digest }}
+          push-to-registry: true
