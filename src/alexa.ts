@@ -8,10 +8,10 @@ const { HA_URL, HA_TOKEN } = env;
 const isTriggerIntent = (
   handlerInput: HandlerInput
 ): handlerInput is HandlerInput & {
-  requestEnvelope: { request: IntentRequest & { intent: { name: "TriggerIntent" } } };
+  requestEnvelope: { request: IntentRequest & { intent: { name: "Trigger_HA" } } };
 } => {
   const request = handlerInput.requestEnvelope.request;
-  return request.type === "IntentRequest" && request.intent.name === "TriggerIntent";
+  return request.type === "IntentRequest" && request.intent.name === "Trigger_HA";
 };
 
 const triggerIntentHandler: RequestHandler = {
@@ -53,7 +53,7 @@ const triggerIntentHandler: RequestHandler = {
         .getResponse();
     }
 
-    return handlerInput.responseBuilder.speak(`Okay, I triggered ${trigger}`).getResponse();
+    return handlerInput.responseBuilder.speak("Okay").getResponse();
   }
 };
 
@@ -63,8 +63,10 @@ const launchRequestHandler: RequestHandler = {
   },
   handle(handlerInput: HandlerInput): Response {
     return handlerInput.responseBuilder
-      .speak("Welcome, you can say trigger followed by a command.")
-      .reprompt("Try saying trigger watching tv.")
+      .speak(
+        "Welcome, you can say trigger followed by a command based on what your Home Assistant is set up to respond to."
+      )
+      .reprompt("Try saying phrases like 'trigger TV Mode'.")
       .getResponse();
   }
 };
