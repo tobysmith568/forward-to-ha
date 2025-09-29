@@ -1,5 +1,5 @@
 > [!WARNING]
-> This is a work in progres!
+> This is a work in progress!
 
 ## forward-to-ha
 
