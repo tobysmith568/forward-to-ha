@@ -1,10 +1,11 @@
-import tobysmith568 from "@tobysmith568/eslint-config";
+import recommended from "@tobysmith568/eslint-config";
+import node from "@tobysmith568/eslint-config/node";
+import prettier from "@tobysmith568/eslint-config/prettier";
+import { defineConfig } from "eslint/config";
 
-const eslintConfig = [
-  ...tobysmith568.recommended,
-  {
-    ignores: ["**/node_modules/**", "**/dist/**", "**/coverage/**"]
-  }
-];
-
-export default eslintConfig;
+export default defineConfig([
+  { ignores: ["**/node_modules/**", "**/dist/**", "**/coverage/**"] },
+  recommended,
+  node,
+  prettier
+]);
