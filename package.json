@@ -24,11 +24,12 @@
   },
   "devDependencies": {
     "@license-cop/permissive": "^2.2.1",
-    "@tobysmith568/eslint-config": "^2.5.0",
+    "@tobysmith568/eslint-config": "^3.2.0",
     "@tobysmith568/prettier-config": "^2.2.1",
     "@types/express": "^4.17.21",
     "@types/node": "^24.4.0",
     "esbuild": "^0.25.9",
+    "eslint": "^10.14.0",
     "license-cop": "^2.2.1",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"
